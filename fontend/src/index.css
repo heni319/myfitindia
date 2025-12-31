@@ -1,0 +1,101 @@
+*:root {
+  --primary: #0055ff;        /* The MyFitIndia Blue */
+  --bg-main: #f4f7f9;       /* Light gray background */
+  --card-bg: #ffffff;
+  --text-main: #1a202c;
+  --text-muted: #718096;
+  --border-color: #e2e8f0;  /* Subtle borders for that clean look */
+  --accent-red: #ff4757;    /* For SALE badges */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* Main Grid Layout: Sidebar + Content */
+.shop-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr; /* Sidebar width is fixed */
+  gap: 30px;
+  max-width: 1400px;
+  margin: 80px auto 0; /* Space for fixed navbar */
+  padding: 20px;
+}
+
+/* Responsive: Stack sidebar on top for mobile */
+@media (max-width: 992px) {
+  .shop-layout {
+    grid-template-columns: 1fr;
+  }
+}
+:root {
+  --primary: #0055ff;        /* Sharp Blue */
+  --bg-main: #f4f7f9;       /* Light gray background */
+  --card-bg: #ffffff;
+  --text-main: #1a202c;     /* Darker text for readability */
+  --border-color: #e2e8f0;  /* Very thin borders */
+  --accent-red: #ff4757;    /* For the sale badge */
+}
+
+/* Make the sidebar sticky like a real dashboard */
+.shop-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 90px auto 0;
+  padding: 0 20px;
+}
+.gold-btn:hover {
+  background-color: #0055ff !important; /* The Blue Color */
+  color: white !important;
+  border-color: #0055ff !important;
+}
+
+.shop-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+  max-width: 1400px;
+  margin: 100px auto;
+  padding: 0 20px;
+}
+:root {
+  --primary: #0055ff;        /* The MyFitIndia Blue */
+  --bg-main: #f4f7f9;       /* Light gray background */
+  --card-bg: #ffffff;
+  --text-main: #1a202c;
+  --border-color: #e2e8f0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* The layout that holds Sidebar and Grid on the same page */
+.shop-container {
+  display: grid;
+  grid-template-columns: 280px 1fr; 
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Mobile fix so the UI doesn't squeeze */
+@media (max-width: 992px) {
+  .shop-container {
+    grid-template-columns: 1fr;
+  }
+}
