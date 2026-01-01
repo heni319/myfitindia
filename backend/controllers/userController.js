@@ -2,48 +2,18 @@ import asyncHandler from '../utils/asyncHandler.js';
 import User from '../models/User.js';
 import generateToken from '../utils/generateTokens.js';
 
-// @desc    Auth user & get token (Login)
-// @route   POST /api/users/login
-// @access  Public
-export const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
-
-  // If user exists and password (after hashing) matches
-  if (user && (await user.matchPassword(password))) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(401);
-    throw new Error('Invalid email or password');
-  }
-});
-
 // @desc    Register a new user
 // @route   POST /api/users
-// @access  Public
 export const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password } = req.body; // Correctly pulling from body
 
   const userExists = await User.findOne({ email });
-
   if (userExists) {
     res.status(400);
     throw new Error('User already exists');
   }
 
-  // Creating the user (the pre-save hook in the model will hash the password)
-  const user = await User.create({
-    name,
-    email,
-    password,
-  });
+  const user = await User.create({ name, email, password });
 
   if (user) {
     res.status(201).json({
@@ -56,5 +26,25 @@ export const registerUser = asyncHandler(async (req, res) => {
   } else {
     res.status(400);
     throw new Error('Invalid user data');
+  }
+});
+
+// @desc    Auth user & get token
+// @route   POST /api/users/login
+export const authUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(401);
+    throw new Error('Invalid email or password');
   }
 });

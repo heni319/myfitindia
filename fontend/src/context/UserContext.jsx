@@ -6,7 +6,7 @@ export const UserProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check localStorage when the app loads to see if user is already logged in
+  // Check localStorage on load
   useEffect(() => {
     const savedUser = localStorage.getItem('userInfo');
     if (savedUser) {
@@ -34,6 +34,25 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // Register Function
+  const register = async (name, email, password) => {
+    const response = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setUserInfo(data);
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      return { success: true };
+    } else {
+      return { success: false, message: data.message };
+    }
+  };
+
   // Logout Function
   const logout = () => {
     localStorage.removeItem('userInfo');
@@ -41,7 +60,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ userInfo, login, logout, loading }}>
+    <UserContext.Provider value={{ userInfo, login, logout, register, loading }}>
       {children}
     </UserContext.Provider>
   );

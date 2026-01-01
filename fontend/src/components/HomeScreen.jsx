@@ -1,115 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import Product from '../components/Product'; 
+import Product from '../components/Product';
+import FilterSidebar from '../components/FilterSidebar';
 
 const HomeScreen = () => {
   const [products, setProducts] = useState([]);
-  const [category, setCategory] = useState('All');
-  const [color, setColor] = useState('All');
-  const [loading, setLoading] = useState(true);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [activeFilters, setActiveFilters] = useState({ brands: [], colors: [], prices: [] });
 
+  // 1. Fetch products from your API
   useEffect(() => {
     const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/products?category=${category}&color=${color}`);
-        const data = await response.json();
-        setProducts(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error:', error);
-        setLoading(false);
-      }
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      setProducts(data);
+      setFilteredProducts(data);
     };
     fetchProducts();
-  }, [category, color]);
+  }, []);
+
+  // 2. Extract UNIQUE values from actual data
+  const uniqueBrands = [...new Set(products.map((p) => p.brand))].filter(Boolean);
+  const uniqueColors = [...new Set(products.map((p) => p.color))].filter(Boolean);
+
+  // 3. Filter Logic
+  useEffect(() => {
+    let result = products;
+
+    if (activeFilters.brands.length > 0) {
+      result = result.filter(p => activeFilters.brands.includes(p.brand));
+    }
+    
+    if (activeFilters.colors.length > 0) {
+      result = result.filter(p => activeFilters.colors.includes(p.color));
+    }
+
+    if (activeFilters.prices.length > 0) {
+      result = result.filter(p => {
+        return activeFilters.prices.some(range => {
+          const [min, max] = range.split('-').map(Number);
+          return p.price >= min && p.price <= max;
+        });
+      });
+    }
+
+    setFilteredProducts(result);
+  }, [activeFilters, products]);
+
+  const handleFilterChange = (type, value) => {
+    setActiveFilters(prev => {
+      const currentSection = prev[type];
+      const isAlreadySelected = currentSection.includes(value);
+      return {
+        ...prev,
+        [type]: isAlreadySelected 
+          ? currentSection.filter(i => i !== value) 
+          : [...currentSection, value]
+      };
+    });
+  };
 
   return (
-    <div className="container" style={{ marginTop: '120px' }}>
-      <h1 style={styles.title}>Latest Collections</h1>
+    <div style={styles.pageWrapper}>
+      <div style={styles.contentContainer}>
+        <aside style={styles.sidebar}>
+          {/* Pass the dynamic unique values as props */}
+          <FilterSidebar 
+            brands={uniqueBrands} 
+            colors={uniqueColors} 
+            onFilterChange={handleFilterChange} 
+          />
+        </aside>
 
-      {/* FILTER SECTION USING YOUR STYLES */}
-      <div style={styles.filterSection}>
-        <div style={styles.filterBox}>
-          <label style={styles.filterLabel}>Category</label>
-          <select 
-            style={styles.customSelect} 
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="All">All Categories</option>
-            <option value="Apparels">Apparels</option>
-            <option value="Supplements">Supplements</option>
-            <option value="Equipment">Equipment</option>
-          </select>
-        </div>
-
-        <div style={styles.filterBox}>
-          <label style={styles.filterLabel}>Color</label>
-          <select 
-            style={styles.customSelect} 
-            onChange={(e) => setColor(e.target.value)}
-          >
-            <option value="All">All Colors</option>
-            <option value="Black">Black</option>
-            <option value="White">White</option>
-            <option value="Blue">Blue</option>
-          </select>
-        </div>
+        <main style={styles.productSection}>
+          <h2 style={styles.title}>Collections ({filteredProducts.length})</h2>
+          <div style={styles.grid}>
+            {filteredProducts.map((product) => (
+              <Product key={product._id} product={product} />
+            ))}
+          </div>
+        </main>
       </div>
-
-      {loading ? (
-        <h2>Loading...</h2>
-      ) : (
-        <div style={styles.grid}>
-          {products.map((product) => (
-            <Product key={product._id} product={product} />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
 
-// INTEGRATING YOUR STYLE OBJECTS HERE
 const styles = {
-  title: { textAlign: 'center', marginBottom: '40px', fontSize: '2.5rem', fontWeight: '800' },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '30px',
-  },
-  filterSection: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '40px',
-    padding: '30px',
-    background: '#fff',
-    borderRadius: '16px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-    marginBottom: '40px',
-    border: '1px solid #f1f5f9'
-  },
-  filterBox: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px'
-  },
-  filterLabel: {
-    fontSize: '0.75rem',
-    fontWeight: '800',
-    color: '#94a3b8',
-    textTransform: 'uppercase',
-    letterSpacing: '1px'
-  },
-  customSelect: {
-    padding: '12px 20px',
-    borderRadius: '10px',
-    border: '2px solid #f1f5f9',
-    fontSize: '1rem',
-    fontWeight: '600',
-    color: '#1e293b',
-    outline: 'none',
-    transition: '0.3s'
-  }
+  pageWrapper: { backgroundColor: '#fcfcfc', minHeight: '100vh', paddingTop: '120px' },
+  contentContainer: { display: 'flex', maxWidth: '1440px', margin: '0 auto', padding: '0 20px', gap: '30px' },
+  sidebar: { width: '280px', flexShrink: 0 },
+  productSection: { flexGrow: 1 },
+  title: { fontSize: '1.5rem', fontWeight: '800', color: '#1e293b', marginBottom: '30px' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px' }
 };
 
 export default HomeScreen;
